@@ -1,4 +1,4 @@
-x-restart-policy: &restart-policy "no"
+x-restart-policy: &restart-policy "unless-stopped"
 services:
   dns:
     image: lancachenet/lancache-dns:latest
@@ -28,3 +28,24 @@ services:
     volumes:
       - ${CACHE_ROOT}/cache:/data/cache
       - ${CACHE_ROOT}/logs:/data/logs
+
+  lancache-manager:
+    image: ghcr.io/regix1/lancache-manager:latest
+    container_name: lancache-manager
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./lancache-manager/data:/data
+      - ${CACHE_ROOT}/logs:/logs:ro
+      - ${CACHE_ROOT}/cache:/cache:ro
+      - /var/run/docker.sock:/var/run/docker.sock  # Optional: for prefill and log rotation
+    environment:
+      - PUID=33
+      - PGID=33
+      - TZ=Europe/Brussels
+      - LanCache__LogPath=/logs/access.log
+      - LanCache__CachePath=/cache
+      - Optimizations__EnableGarbageCollectionManagement=true
+      - POSTGRES_USER=lancache
+      - POSTGRES_PASSWORD=lkg79685Tovlz@!-#
